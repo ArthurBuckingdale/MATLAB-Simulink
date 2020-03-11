@@ -15,9 +15,9 @@ function [transit_timings,integration_error]=newtonian_gravity_nbody(body_name,b
 %   outputs:transit_timings......
 %           integration_error:double, contains the error from solving the
 %           ode's.
-
-
-% %let's now go ahead and solve a couple more cases and plot them
+%%%%%%%%%%%% %let's now go ahead and solve a couple more cases and plot them
+%below is the required format that the ode's need to be in if you feel the
+%need to make some changes to the code. 
 % [t1,y1] = ode45(@(t,y) odefcn(t,y,n), tspan, ic);
 % %here is the odefun that is listed above.
 %     function dydt = odefcn(t,y,n)
@@ -25,6 +25,7 @@ function [transit_timings,integration_error]=newtonian_gravity_nbody(body_name,b
 %         dydt(1) = y(2);
 %         dydt(2) = -y(1).^n-(2/t)*y(2);
 %     end
+%%%%%%%%%%%%
 
 %% initialise the system
 %first, we are going to specify a struct for the planet variables
@@ -52,7 +53,7 @@ if DEBUG == 1
     fprintf('Initial enrgy contained in the system %d \n',initial_system_energy)
 end
 
-%% prep the differential equation calculations
+%% prep the differential equation values
 %This section will contain the function that calculates the force which is
 %exerted on each object. This calculation is quite awful because the force
 %is a vector. Each component acting on each body needs to be calculated. We
@@ -66,6 +67,36 @@ accel_of_gravity=calc_grav_accel(body_information);
 disp('acceleration due to gravity for the various components of the bodies')
 unfold(accel_of_gravity)
 
+%% fill the format that the BS method requires as inputs
+%this is going to create the structure that is the required input. We could
+%go ahead and fill it with the previous function, but it' nice to have
+%things that are discreet. And the structure to solve the ode's requires
+%the velocity, which is the integral of the acceleration. In order to solve
+%ODE's of degree two or higher, we require a system of equations. For
+%example if we have an Nth degree ODE, we require N first order ode's to
+%solve for this. This will get a bit messy in terms of code, simply because
+%it is a relatively convoluted calculation, we need the effect of each
+%component on every other body in the system.
+
+%%%%%%%%%%%%%%%%
+x=struct_to_vector(body_information);
+%this is the equivalent of the odefun listed above. 
+dxdt=distance_derivatives_func(1,x,body_information);
+%%%%%%%%%%%%%%%%
+
+%% set the initial conditions and the time duration of integration. 
+%we need to set the duration of time that we wish to integrate the fucntion
+%for. The initial conditions also need to be set,fortunately, we have
+%created the struct_to_vector function which will do just that. We are
+%going to test out the ode45 method first as it is a matlab suuported one.
+%We will move on to the BS method after testing. Or it will be a callable
+%option. We can observe the performance deltas here as well. 
+
+tspan = [0.1 100];
+t=1;
+ic=[struct_to_vector(body_information)]';
+[t1,y1] = ode45(@(t,x) distance_derivatives_func(t,x,body_information), tspan, ic);
+plot(t1,y1(:,8))
 
 
    
