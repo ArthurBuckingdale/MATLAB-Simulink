@@ -20,10 +20,6 @@ function dxdt=distance_derivatives_func(t,x,body_information)
 %       Outputs:dxdt(), vector that contains the values of the
 %               accelerations and the velocities for each body in the system. 
 
-disp('-----------------------------')
-unfold(body_information)
-disp('-----------------------------')
-disp(x)
 body_information=update_body_position(x,body_information);
 accel_of_gravity=calc_grav_accel(body_information);
 j=1;

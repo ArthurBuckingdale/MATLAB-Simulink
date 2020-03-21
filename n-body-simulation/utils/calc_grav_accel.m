@@ -28,7 +28,7 @@ for i=1:length(body_information)
     for j=1:length(body_information)
         if j~=i
             separation_distance=sqrt(norm(body_information(i).position-body_information(j).position)).^3;
-            accel_of_gravity(i).acceleration(1:3,j)=((body_information(j).mass).*([body_information(i).position]-[body_information(j).position]))./(separation_distance);
+            accel_of_gravity(i).acceleration(1:3,j)=-((body_information(j).mass).*([body_information(i).position]-[body_information(j).position]))./(separation_distance);
             accel_of_gravity(i).body_im_in{j}=body_information(i).name;
             accel_of_gravity(i).body_im_looking_at{j}=body_information(j).name;
         end
