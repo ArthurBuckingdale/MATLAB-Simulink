@@ -23,6 +23,7 @@ function dxdt=distance_derivatives_func(t,x,body_information)
 body_information=update_body_position(x,body_information);
 accel_of_gravity=calc_grav_accel(body_information);
 j=1;
+
 for i=1:6:(6*length(body_information))
     dxdt(i)= body_information(j).velocity(1);
     dxdt(i+1)=body_information(j).velocity(2);
@@ -34,3 +35,5 @@ for i=1:6:(6*length(body_information))
 end
 dxdt=dxdt';
 end
+
+

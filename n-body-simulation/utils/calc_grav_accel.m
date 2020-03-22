@@ -19,7 +19,8 @@ function accel_of_gravity=calc_grav_accel(body_information)
 
 %define the format before entering the parfor loop
 % accel_of_gravity(1).separation_distance(1)=0.0;
-accel_of_gravity(1).acceleration(1:3,2)=zeros();
+%accel_of_gravity(1).acceleration(1:3,2)=zeros();
+newtonsg = 6.647e-11;
 % accel_of_gravity(1).body_im_in{1}='str';
 % accel_of_gravity(1).body_im_looking_at{1}='str';
 
@@ -27,12 +28,11 @@ accel_of_gravity(1).acceleration(1:3,2)=zeros();
 for i=1:length(body_information)
     for j=1:length(body_information)
         if j~=i
-            separation_distance=sqrt(norm(body_information(i).position-body_information(j).position)).^3;
-            accel_of_gravity(i).acceleration(1:3,j)=-((body_information(j).mass).*([body_information(i).position]-[body_information(j).position]))./(separation_distance);
+            separation_distance=(norm(body_information(i).position-body_information(j).position)).^3;       
+            accel_of_gravity(i).acceleration(1:3,j)=(newtonsg).*-((body_information(j).mass).*([body_information(i).position]-[body_information(j).position]))./(separation_distance);
             accel_of_gravity(i).body_im_in{j}=body_information(i).name;
             accel_of_gravity(i).body_im_looking_at{j}=body_information(j).name;
         end
     end
 end
-
 end

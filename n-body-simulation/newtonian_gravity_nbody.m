@@ -1,4 +1,4 @@
-function [transit_timings,integration_error]=newtonian_gravity_nbody(body_name,body_mass,init_state_vector,DEBUG)
+function [transit_time,energy_conservation]=newtonian_gravity_nbody(body_name,body_mass,init_state_vector,DEBUG,tspan,plot_xy,plot_trans_time)
 %The purpose of this function is to perform an n-body simulation for
 %planetary motion. It is going to be a re-write of my undergrad thesis. My
 %programming skills have increased a lot since and I think I can make a
@@ -95,18 +95,33 @@ dxdt=distance_derivatives_func(1,x,body_information);
 %created the struct_to_vector function which will do just that. We are
 %going to test out the ode45 method first as it is a matlab suuported one.
 %We will move on to the BS method after testing. Or it will be a callable
-%option. We can observe the performance deltas here as well.
+%option. We can observe the performance deltas here as well. As of mar 22nd
+%2020, timespan will be set in the wrapper function
 
-tspan = [0.1 10];
 t=1;
 ic=[struct_to_vector(body_information)]';
 [t1,y1] = ode45(@(t,x) distance_derivatives_func(t,x,body_information), tspan, ic);
 
-hold on 
-plot(y1(:,7),y1(:,8),'r*')
-plot(y1(:,1),y1(:,2),'b*')
-plot(y1(:,13),y1(:,14),'y*')
-hold off
+if DEBUG == 1 || plot_xy == 1
+    figure
+    hold on
+    plot(y1(:,7),y1(:,8),'r*')
+    plot(y1(:,1),y1(:,2),'b*')
+    plot(y1(:,13),y1(:,14),'y*')
+    title('positions of objects')
+    axis equal
+    hold off
+    figure
+    hold on
+    plot(y1(:,10),y1(:,11),'r*')
+    plot(y1(:,4),y1(:,5),'b*')
+    plot(y1(:,16),y1(:,17),'y*')
+    title('velocities of objects')
+    axis equal
+    hold off
+end
+
+
 
 
 %% Error from the ode solving
@@ -118,7 +133,6 @@ hold off
 %calc_relative_distances function yields the gravitational potential.
 
 body_information=update_body_position(y1(end,:),body_information);
-unfold(body_information)
 kinetic_energy_final=calc_kinetic_energy(body_information);
 [~,grav_potential_final]=calc_relative_distances(body_information);
 final_system_energy=sum(unique(grav_potential_final))+sum([kinetic_energy_final(:).value]);
@@ -126,55 +140,37 @@ energy_conservation=(final_system_energy./initial_system_energy);
 fprintf('The final energy divided by the initial is %d \n',energy_conservation)
 fprintf('The inital energy was %d, the final is %d \n',initial_system_energy,final_system_energy)
 
+%% computing the transit time variations of the system over time.
+%this section will be measuring the point where we're seeing a transit. for
+%the sake of this exercise, a transit will occurr when the body is crossing
+%the positive x axis. The integrator is not guarenteed to provide a value
+%exactly at the zero point for its orbit. For this reason,we must perform a
+%small interpolation to obtain its exact transit timing. We don't want to
+%fit a sinusoid curve since any elliptic behaviour will throw off these
+%values. The routine will parse through the output from the integrator and
+%find locations when y(t)==negative and y(t+1)==positive(since our orbits
+%are counterclockwise, they will be passing the positive x axis from the
+%bottom) we can change this is deemed necessary. We can also improve this
+%by removing the linear integrator.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+transit_time=find_transit_timings(t1,y1,body_information);
+%reporting of the data for debugging and other things
+if DEBUG == 1
+    unfold(transit_time)
+end
+[~,vv]=size(y1);
+if DEBUG == 1 || plot_trans_time == 1
+    for rr=1:vv/6
+        if ~isempty(transit_time(rr).value(:))
+            figure(rr)
+            plot(transit_time(rr).value(:),'b*')
+            title(sprintf('the transit timings for %s \n',transit_time(rr).body))
+            ylabel('transit timings in seconds')
+            xlabel('number of transits after initialization')
+        end
+    end
+end
 
 
 end
