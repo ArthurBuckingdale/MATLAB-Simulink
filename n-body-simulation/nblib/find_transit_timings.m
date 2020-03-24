@@ -9,7 +9,7 @@ function transit_time=find_transit_timings(t1,y1,body_information)
 %find locations when y(t)==negative and y(t+1)==positive(since our orbits
 %are counterclockwise, they will be passing the positive x axis from the
 %bottom) we can change this is deemed necessary. We can also improve this
-%by removing the linear integrator.
+%by removing the linear integrator. 
 %       input:  t1:matrix, this is what's returned by the integrator. it
 %               contains the time stamps for all the observations in the
 %               follwing variable
@@ -32,15 +32,15 @@ fprintf('the length of the time array is %d, the length of the postion array is 
 fprintf('the number of objects in this system is %d \n',vv./6)
 j=1;
 for ss=1:6:vv
-    k=1;
-    for uu=1:(length(t1)-1)
-        if y1(uu,ss+1)<0 && y1(uu+1,ss+1)>0
-            x = [t1(uu) t1(uu+1)];
-            y = [y1(uu,ss+1) y1(uu+1,ss+1)];
-            lin_fit = polyfit(x,y,1);
-            transit_time(j).value(k)=-(lin_fit(2)./lin_fit(1));
+    k=1;  
+    for uu=1:(length(t1)-2)
+        if y1(uu,ss+1)<0 && y1(uu+1,ss+1)>0 && (t1(uu)-body_information(j).period)>0
+            x = [t1(uu-1) t1(uu) t1(uu+1) t1(uu+2)];
+            y = [y1(uu-1,ss+1) y1(uu,ss+1) y1(uu+1,ss+1) y1(uu+2,ss+1)];
+            lin_fit = polyfit(x,y,1);                      
+            transit_time(j).value(k)=(-(lin_fit(2)./lin_fit(1)))-(body_information(j).period*k);
             transit_time(j).body=body_information(j).name;
-            k=k+1;
+            k=k+1;       
         end
     end
     j=j+1;

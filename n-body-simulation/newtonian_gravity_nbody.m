@@ -1,4 +1,5 @@
-function [transit_time,energy_conservation]=newtonian_gravity_nbody(body_name,body_mass,init_state_vector,DEBUG,tspan,plot_xy,plot_trans_time)
+function [transit_time,energy_conservation]=newtonian_gravity_nbody(body_name,...
+    body_mass,init_state_vector,DEBUG,tspan,plot_xy,plot_trans_time,orbital_period)
 %The purpose of this function is to perform an n-body simulation for
 %planetary motion. It is going to be a re-write of my undergrad thesis. My
 %programming skills have increased a lot since and I think I can make a
@@ -41,6 +42,9 @@ for i=1:length(body_name)
     body_information(i).mass=body_mass(i);
     body_information(i).position=init_state_vector(1:3,i);
     body_information(i).velocity=init_state_vector(4:6,i);
+    if i>1
+        body_information(i).period=orbital_period(i-1);
+    end
 end
 kinetic_energy_start=calc_kinetic_energy(body_information);
 [relative_distance,grav_potential_start]=calc_relative_distances(body_information);
@@ -108,6 +112,9 @@ if DEBUG == 1 || plot_xy == 1
     plot(y1(:,7),y1(:,8),'r*')
     plot(y1(:,1),y1(:,2),'b*')
     plot(y1(:,13),y1(:,14),'y*')
+    plot(y1(:,19),y1(:,20),'g*')
+    plot(y1(:,25),y1(:,26),'y*')
+    plot(y1(:,31),y1(:,32),'b*')
     title('positions of objects')
     axis equal
     hold off
@@ -159,11 +166,10 @@ transit_time=find_transit_timings(t1,y1,body_information);
 if DEBUG == 1
     unfold(transit_time)
 end
-[~,vv]=size(y1);
 if DEBUG == 1 || plot_trans_time == 1
-    for rr=1:vv/6
+    for rr=1:length(transit_time)
         if ~isempty(transit_time(rr).value(:))
-            figure(rr)
+            figure(rr+2)
             plot(transit_time(rr).value(:),'b*')
             title(sprintf('the transit timings for %s \n',transit_time(rr).body))
             ylabel('transit timings in seconds')
