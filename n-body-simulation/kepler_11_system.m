@@ -7,7 +7,7 @@
 %initial conditions. 
 
 
-
+clear all
 %% enter in the mass of each body in the system. 
 %for this, I believe they are given as a function of jupiter masses, which
 %is why they are all multiplied by it, save for the star ofcourse 
@@ -34,7 +34,7 @@ names{7}='Kepler-11g';
 %that go down a colum, not across a row. 
 
 
-    x(1,1) = -5000000.0; % x1   star
+    x(1,1) = -0.0; % x1   star
     x(4,1) = 0.0; % vx1
     x(2,1) = 0.0 ;% y1
     x(5,1) = -3.3 ; %vy1
@@ -98,25 +98,13 @@ orbital_period=[890265.6,1126042.56,1960165.44,2764368.0,4033635.84,10227911.04]
 %fraction of the period they've completed already based on their initial
 %conditions. Fortunately, we have a way of doing this relatively easily due
 %to the way that we've chosen our transits. Since y=0 when we transit, we can 
-%easily compute the fraction of an orbit that has passed. 
-[~,mm]=size(x);
-for i=1:mm
-    if x(2,i)>0 %this will provide front or back half
-        angle=atand(x(2,i)/x(1,i)); %this will provide quadrant and location
-        if angle > 0
-            fraction_of_orbit=(2*pi-angle)/2*pi;
-        else
-            fraction_of_orbit=(pi-angle)/2*pi;
-        end
-    else
-        angle=atand(x(2,i)/x(1,i));
-        if angle > 0 
-            fraction_of_orbit=(pi-angle)/(2*pi);
-        else
-            fraction_of_orbit=((pi/2)+angle)/(2*pi);
-        end
-    end
-end
+%easily compute the fraction of an orbit that has passed. I'm almost 100%
+%sure there is a better way to perform the below algorithm. I did it late
+%at night and it's going to work for now(I can probably query these from the 
+%exoplanet archive(maybe not since we've chosen a zero for one))....
+
+init_orbit_fractions=compute_initial_orbit_percentage(x,orbital_period);
+disp(init_orbit_fractions)
 
     
 %% choose the debugging boolean
@@ -134,13 +122,17 @@ DEBUG = 1;
 %duration which we integrate the system for. 
 plot_xy = 0; %makes a overhead plot of the system
 plot_trans_time = 0;
+method=2; %1 = ode45, 2=BS
 
 %% set the timespan for integration 
-tspan = [0.001 1000000];
+tspan = [0.001 50000];
 
 %% executing the function
 %this section will call and execute the fucntion
-[transit_timings,integration_error]=newtonian_gravity_nbody(names,mass,x,DEBUG,tspan,plot_xy,plot_trans_time,orbital_period);
+[transit_timings,integration_error]=newtonian_gravity_nbody(names,mass,x,DEBUG,...
+    tspan,plot_xy,plot_trans_time,orbital_period,init_orbit_fractions,method);
+
+disp(init_orbit_fractions)
 
 %% various post processing and such things
 %show all the data that comes from this function...

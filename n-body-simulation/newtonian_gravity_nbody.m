@@ -1,5 +1,6 @@
 function [transit_time,energy_conservation]=newtonian_gravity_nbody(body_name,...
-    body_mass,init_state_vector,DEBUG,tspan,plot_xy,plot_trans_time,orbital_period)
+    body_mass,init_state_vector,DEBUG,tspan,plot_xy,plot_trans_time,orbital_period,...
+    init_orbit_frac,method)
 %The purpose of this function is to perform an n-body simulation for
 %planetary motion. It is going to be a re-write of my undergrad thesis. My
 %programming skills have increased a lot since and I think I can make a
@@ -44,6 +45,7 @@ for i=1:length(body_name)
     body_information(i).velocity=init_state_vector(4:6,i);
     if i>1
         body_information(i).period=orbital_period(i-1);
+        body_information(i).init_orbit_frac=init_orbit_frac(i);
     end
 end
 kinetic_energy_start=calc_kinetic_energy(body_information);
@@ -104,28 +106,40 @@ dxdt=distance_derivatives_func(1,x,body_information);
 
 t=1;
 ic=[struct_to_vector(body_information)]';
-[t1,y1] = ode45(@(t,x) distance_derivatives_func(t,x,body_information), tspan, ic);
+
+if method == 1
+    [t1,y1] = ode45(@(t,x) distance_derivatives_func(t,x,body_information), tspan, ic);
+elseif method == 2
+    tol = 1e-10;
+    t = linspace(tspan(1), tspan(2), 500);
+    [z, info] = BulirschStoer(@(t,x) distance_derivatives_func(t,x,body_information),t,ic',tol);
+    y1=z';
+    t1=t;
+end
+
+
 
 if DEBUG == 1 || plot_xy == 1
     figure
     hold on
     plot(y1(:,7),y1(:,8),'r*')
     plot(y1(:,1),y1(:,2),'b*')
-    plot(y1(:,13),y1(:,14),'y*')
+    plot(y1(:,13),y1(:,14),'k*')
     plot(y1(:,19),y1(:,20),'g*')
-    plot(y1(:,25),y1(:,26),'y*')
-    plot(y1(:,31),y1(:,32),'b*')
+    plot(y1(:,25),y1(:,26),'k*')
+    plot(y1(:,31),y1(:,32),'c*')
+    plot(y1(:,37),y1(:,38),'m*')
     title('positions of objects')
     axis equal
     hold off
-    figure
-    hold on
-    plot(y1(:,10),y1(:,11),'r*')
-    plot(y1(:,4),y1(:,5),'b*')
-    plot(y1(:,16),y1(:,17),'y*')
-    title('velocities of objects')
-    axis equal
-    hold off
+    %     figure
+    %     hold on
+    %     plot(y1(:,10),y1(:,11),'r*')
+    %     plot(y1(:,4),y1(:,5),'b*')
+    %     plot(y1(:,16),y1(:,17),'y*')
+    %     title('velocities of objects')
+    %     axis equal
+    %     hold off
 end
 
 
@@ -169,11 +183,11 @@ end
 if DEBUG == 1 || plot_trans_time == 1
     for rr=1:length(transit_time)
         if ~isempty(transit_time(rr).value(:))
-            figure(rr+2)
+            figure(rr)
             plot(transit_time(rr).value(:),'b*')
             title(sprintf('the transit timings for %s \n',transit_time(rr).body))
             ylabel('transit timings in seconds')
-            xlabel('number of transits after initialization')
+            xlabel('number of transits after initialization')            
         end
     end
 end

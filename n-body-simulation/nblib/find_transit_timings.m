@@ -24,9 +24,19 @@ function transit_time=find_transit_timings(t1,y1,body_information)
 %                   .value:double vect, contains all measured transit times
 %                   .body: string, the body that these times are associated
 %                   with
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% tSpan = [0,10];   % Time span for initial value problem
+% z0 = [0.6; 2.5];   %Initial state
+% % Dynamical system - driven damped pendulum
+% dynFun = @(t,z)( [z(2,:);  cos(t) - 0.1*z(2,:) - sin(z(1,:))] );
+% % Solve using Bulirsch-Stoer method
+% tol = 1e-12;
+% t = linspace(tSpan(1), tSpan(2), 25);
+% [z, info] = BulirschStoer(dynFun,t,z0,tol);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
+transit_time(2).value=0;
+transit_time(2).body='noting';
 fprintf('the length of the time array is %d, the length of the postion array is %d \n',length(t1),length(y1))
 [~,vv]=size(y1);
 fprintf('the number of objects in this system is %d \n',vv./6)
@@ -38,7 +48,8 @@ for ss=1:6:vv
             x = [t1(uu-1) t1(uu) t1(uu+1) t1(uu+2)];
             y = [y1(uu-1,ss+1) y1(uu,ss+1) y1(uu+1,ss+1) y1(uu+2,ss+1)];
             lin_fit = polyfit(x,y,1);                      
-            transit_time(j).value(k)=(-(lin_fit(2)./lin_fit(1)))-(body_information(j).period*k);
+            transit_time(j).value(k)=(-(lin_fit(2)./lin_fit(1)))-(body_information(j).period*k)...
+                +(body_information(j).init_orbit_frac*(body_information(j).period));
             transit_time(j).body=body_information(j).name;
             k=k+1;       
         end
