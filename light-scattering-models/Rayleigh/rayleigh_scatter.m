@@ -3,7 +3,7 @@ function scattered_intensity=rayleigh_scatter(intensity_nought,theta,lambda,...
 %the purpose of this function is to compute the rayleigh scatter of light
 %as the result of interation with particles. 
 %   Inputs: intensity_nought:double, initial light intensity [W/m^2]
-%           theta:double, scattering angle [deg]
+%           theta:double, scattering angle [rad]
 %           lambda:double, wavelength of light [m]
 %           refractive_index:double, refractive index
 %           distance_from_particle:double, distance away from particle [m]
@@ -17,14 +17,14 @@ function scattered_intensity=rayleigh_scatter(intensity_nought,theta,lambda,...
 if sphere_diameter > (lambda/10)
     disp('Rayleigh approximations fail here')
     disp('Particle diameter must be <1/10 of lambda')
-    Error('Change input parameter, paritcle size not correct for Rayleigh approximation')
+    warning('Change input parameter, paritcle size not correct for Rayleigh approximation')
 end
 
 %% computing the intensity of scattered light.
 
-refraction_term=((refractive_index.^2-1)/(refractive_index.^2+2)).^2;
+refraction_term=(((refractive_index.^2)-1)/((refractive_index.^2)+2)).^2;
 diameter_term=(sphere_diameter/2).^6;
 lambda_term=(2*pi/lambda).^4;
 spherical_term=(1+cos(theta).^2)/(2*distance_from_particle.^2);
-scattered_intensity=intensity_nought*spherical_term*lambda_term*diameter_term*refraction_term;
+scattered_intensity=intensity_nought.*spherical_term.*lambda_term.*diameter_term.*refraction_term;
 

@@ -11,7 +11,7 @@ function lambda_prime=compton_scatter(lambda,theta)
 %   Outputs:lambda_prime: double, sacttered wavelength of the light [m]
 
 compton_wavelength=2.43*(10.^-12);
-lambda_prime=compton_wavelength*(1-cosd(theta))+lambda;
+lambda_prime=(compton_wavelength*(1-cosd(theta)))+lambda;
 
 
 
